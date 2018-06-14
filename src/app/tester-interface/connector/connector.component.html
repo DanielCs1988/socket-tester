@@ -1,0 +1,32 @@
+<form #serverForm="ngForm" (ngSubmit)="onSubmit()">
+
+  <div class="row">
+    <div class="col-md-9">
+      <label for="domain">Domain name</label>
+      <input type="text" id="domain" class="form-control" name="domain" ngModel required>
+    </div>
+    <div class="col-md-3">
+      <label for="port">Port</label>
+      <input type="number" id="port" class="form-control" name="port" ngModel required>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-2">
+      <div class="form-check mt-3">
+        <input type="checkbox" class="form-check-input" id="auth-required" #authRequired>
+        <label class="form-check-label" for="auth-required">Auth Needed</label>
+      </div>
+    </div>
+    <div class="col-8">
+      <label for="auth-token">Auth Token</label>
+      <textarea id="auth-token" class="form-control" name="token" ngModel [disabled]="!authRequired.checked"></textarea>
+    </div>
+    <div class="col-2">
+      <button type="submit" class="btn btn-success btn-block mt-3" [disabled]="!serverForm.valid">
+        Connect
+      </button>
+    </div>
+  </div>
+
+</form>

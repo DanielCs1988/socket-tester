@@ -1,0 +1,18 @@
+<form #messageForm="ngForm" (ngSubmit)="onSubmit()">
+
+  <div class="row">
+    <div class="col-3">
+      <div class="form-group">
+        <label for="route">Route</label>
+        <input type="text" name="route" id="route" class="form-control" ngModel required>
+      </div>
+      <button type="submit" class="btn btn-success btn-block">Send</button>
+      <button (click)="onDisconnect()" class="btn btn-danger btn-block">Disconnect</button>
+    </div>
+    <div class="col-9">
+      <label for="payload">Payload</label>
+      <textarea name="payload" id="payload" class="form-control" rows="10" ngModel></textarea>
+    </div>
+  </div>
+
+</form>
