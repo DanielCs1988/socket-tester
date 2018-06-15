@@ -8,7 +8,7 @@ import {LoggerService} from '../services/logger.service';
 })
 export class LoggerComponent implements OnInit {
 
-  private logs: string[] = [];
+  logs: string[] = [];
 
   constructor(private logger: LoggerService) { }
 
