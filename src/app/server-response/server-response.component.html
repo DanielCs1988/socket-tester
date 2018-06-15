@@ -1,2 +1,7 @@
-<p>Route: {{ route }}</p>
-<pre>{{ payload }}</pre>
+<div *ngIf="route">
+  <p>Route: {{ route }}</p>
+  <pre>{{ payload }}</pre>
+</div>
+<div *ngIf="!route">
+  <h2 class="text-center">Server replies will appear here.</h2>
+</div>

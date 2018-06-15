@@ -1,9 +1,12 @@
-import {EventEmitter} from '@angular/core';
+import {EventEmitter, Injectable} from '@angular/core';
+import {LoggerService} from './logger.service';
 
+@Injectable()
 export class SocketClient {
 
     private static SEPARATOR = '&';
     private socket: WebSocket;
+    private serverAddress: string;
     private onOpenHandler: Function;
     private onCloseHandler: Function;
     private cache: Message[] = [];
@@ -12,7 +15,7 @@ export class SocketClient {
 
     onMessage = new EventEmitter<Message>();
 
-    constructor() {
+    constructor(private logger: LoggerService) {
         setInterval(() => {
             if (this.isOpen && this.cache.length > 0) {
                 const transaction = this.cache.shift();
@@ -24,6 +27,7 @@ export class SocketClient {
     connect(domain: string, port: number, token?: string) {
         if (this.isOpen) return;
         const url = token ? `ws://${domain}:${port}/${token}` : `ws://${domain}:${port}`;
+        this.serverAddress = `${token ? 'Secure s' : 'S'}erver on domain ${domain} via port ${port}.`;
         this.socket = new WebSocket(url);
         this.socket.addEventListener('open', (ev) => this.onOpenConnection(ev));
         this.socket.addEventListener('close', (ev) => this.onClosedConnection(ev, domain, port, token));
@@ -41,12 +45,16 @@ export class SocketClient {
     private onOpenConnection(event: any) {
         this.isOpen = true;
         if (this.onOpenHandler) this.onOpenHandler.call(null, event);
+        this.logger.log('Connected to: ' + this.serverAddress);
     }
 
     private onClosedConnection(event: any, domain: string, port: number, token?: string) {
         this.isOpen = false;
         if (this.onCloseHandler) this.onCloseHandler.call(null, event);
+        this.logger.log('Disconnected from: ' + this.serverAddress);
+
         if (this.isClosed) { return; }
+        this.logger.log('Attempting to reconnect...');
         setTimeout(() => {
             this.connect(domain, port, token);
         }, 10000);

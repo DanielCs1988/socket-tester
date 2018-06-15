@@ -24,7 +24,6 @@ export class ConnectorComponent implements OnInit {
     }
     this.socket.on('open', () => {
       this.router.navigate(['/messages']);
-      // TODO: log connection
     });
     this.socket.connect(target.domain, target.port, target.token);
   }

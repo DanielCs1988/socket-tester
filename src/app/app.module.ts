@@ -10,6 +10,7 @@ import { MessageSenderComponent } from './tester-interface/message-sender/messag
 import {AppRoutingModule} from './app-routing.module';
 import {FormsModule} from '@angular/forms';
 import {SocketClient} from './services/SocketClient';
+import {LoggerService} from './services/logger.service';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,10 @@ import {SocketClient} from './services/SocketClient';
     AppRoutingModule,
     FormsModule
   ],
-  providers: [SocketClient],
+  providers: [
+    SocketClient,
+    LoggerService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

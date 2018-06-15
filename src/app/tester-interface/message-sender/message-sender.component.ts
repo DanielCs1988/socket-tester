@@ -15,11 +15,13 @@ export class MessageSenderComponent implements OnInit {
   constructor(private router: Router, private socket: SocketClient) { }
 
   ngOnInit() {
+    this.socket.on('close', () => {
+      this.router.navigate(['/connect']);
+    });
   }
 
   onDisconnect() {
     this.socket.disconnect();
-    this.router.navigate(['/connect']);
   }
 
   onSubmit() {

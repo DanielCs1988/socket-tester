@@ -1,3 +1,5 @@
-<p>
-  logger works!
-</p>
+<div *ngIf="logs.length > 0">
+  <div *ngFor="let msg of logs" class="text-justify">
+    <p>{{ msg }}</p>
+  </div>
+</div>

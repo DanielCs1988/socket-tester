@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {LoggerService} from '../services/logger.service';
 
 @Component({
   selector: 'app-logger',
@@ -7,9 +8,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LoggerComponent implements OnInit {
 
-  constructor() { }
+  private logs: string[] = [];
+
+  constructor(private logger: LoggerService) { }
 
   ngOnInit() {
+    this.logger.onLog.subscribe(msg => this.logs.push(msg))
   }
 
 }
