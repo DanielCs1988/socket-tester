@@ -1,28 +1,32 @@
+import {EventEmitter} from '@angular/core';
+
 export class SocketClient {
 
     private static SEPARATOR = '&';
     private socket: WebSocket;
-    private routes = new Map<string, Function>();
     private onOpenHandler: Function;
     private onCloseHandler: Function;
-    private cache: Transaction[] = [];
+    private cache: Message[] = [];
     private isOpen = false;
     private isClosed = false;
+
+    onMessage = new EventEmitter<Message>();
 
     constructor() {
         setInterval(() => {
             if (this.isOpen && this.cache.length > 0) {
                 const transaction = this.cache.shift();
-                this.send(transaction.route, transaction.payload, transaction.callback);
+                this.send(transaction.route, transaction.payload);
             }
         }, 100);
     }
 
-    connect(url: string) {
+    connect(domain: string, port: number, token?: string) {
         if (this.isOpen) return;
+        const url = token ? `ws://${domain}:${port}/${token}` : `ws://${domain}:${port}`;
         this.socket = new WebSocket(url);
         this.socket.addEventListener('open', (ev) => this.onOpenConnection(ev));
-        this.socket.addEventListener('close', (ev) => this.onClosedConnection(ev, url));
+        this.socket.addEventListener('close', (ev) => this.onClosedConnection(ev, domain, port, token));
         this.socket.addEventListener('message', event => this.processMessage(event.data));
     }
 
@@ -39,12 +43,12 @@ export class SocketClient {
         if (this.onOpenHandler) this.onOpenHandler.call(null, event);
     }
 
-    private onClosedConnection(event: any, url: string) {
+    private onClosedConnection(event: any, domain: string, port: number, token?: string) {
         this.isOpen = false;
         if (this.onCloseHandler) this.onCloseHandler.call(null, event);
         if (this.isClosed) { return; }
         setTimeout(() => {
-            this.connect(url);
+            this.connect(domain, port, token);
         }, 10000);
     }
 
@@ -53,38 +57,29 @@ export class SocketClient {
     }
 
     on(route: string, callback: Function) {
-        switch (route) {
-            case 'open':
-                this.onOpenHandler = callback;
-                break;
-            case 'close':
-                this.onCloseHandler = callback;
-                break;
-            default:
-                this.routes.set(route, callback);
+        if (route === 'open') {
+            this.onOpenHandler = callback;
+        } else if (route === 'close') {
+            this.onCloseHandler = callback;
         }
     }
 
-    send(route: string, payload: any, callback?: Function) {
+    send(route: string, payload: any) {
         if (!this.isOpen) {
-          this.cacheMessage(route, payload, callback);
+          this.cacheMessage(route, payload);
           return;
-        }
-        if (callback) {
-            this.routes.set(route, callback);
         }
         const content = typeof payload === 'string' ? payload : JSON.stringify(payload);
         const message = route + SocketClient.SEPARATOR + content;
         this.socket.send(message);
     }
 
-    private cacheMessage(route: string, payload: any, callback: Function) {
-        const transaction: Transaction = {
+    private cacheMessage(route: string, payload: any) {
+        const message: Message = {
             route: route,
-            payload: payload,
-            callback: callback
+            payload: payload
         };
-        this.cache.push(transaction);
+        this.cache.push(message);
     }
 
     private processMessage(raw: string) {
@@ -93,18 +88,15 @@ export class SocketClient {
     }
 
     private handleMessages(route: string, payload: string) {
-        const handler = this.routes.get(route);
-        if (handler != undefined) {
-            const object = JSON.parse(payload);
-            handler.call(null, object);
-        } else {
-            console.error(`Received message with no corresponding handler:\nRoute: ${route}\nPayload: ${payload}`);
-        }
+        const message = {
+          route: route,
+          payload: JSON.parse(payload)
+        };
+        this.onMessage.emit(message);
     }
 }
 
-interface Transaction {
+export interface Message {
     route: string,
-    payload: any,
-    callback?: Function
+    payload: any
 }

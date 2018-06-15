@@ -1,6 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {NgForm} from '@angular/forms';
 import {Router} from '@angular/router';
+import {SocketClient} from '../../services/SocketClient';
 
 @Component({
   selector: 'app-message-sender',
@@ -11,17 +12,21 @@ export class MessageSenderComponent implements OnInit {
 
   @ViewChild('messageForm') msgForm: NgForm;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private socket: SocketClient) { }
 
   ngOnInit() {
   }
 
   onDisconnect() {
+    this.socket.disconnect();
     this.router.navigate(['/connect']);
   }
 
   onSubmit() {
-    console.log(this.msgForm.value);
+    const route = this.msgForm.value.route;
+    const payload = this.msgForm.value.payload;
+    if (!route) return;
+    this.socket.send(route, payload);
     this.msgForm.reset();
   }
 }

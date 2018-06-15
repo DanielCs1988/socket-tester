@@ -1,6 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {NgForm} from '@angular/forms';
 import {Router} from '@angular/router';
+import {SocketClient} from '../../services/SocketClient';
 
 @Component({
   selector: 'app-connector',
@@ -11,7 +12,7 @@ export class ConnectorComponent implements OnInit {
 
   @ViewChild('serverForm') serverForm: NgForm;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private socket: SocketClient) { }
 
   ngOnInit() {
   }
@@ -21,8 +22,11 @@ export class ConnectorComponent implements OnInit {
     if (!(target.domain && target.port)) {
       return;
     }
-    const url = `ws://${target.domain}:${target.port}`;
-    this.router.navigate(['/messages']);
+    this.socket.on('open', () => {
+      this.router.navigate(['/messages']);
+      // TODO: log connection
+    });
+    this.socket.connect(target.domain, target.port, target.token);
   }
 
 }

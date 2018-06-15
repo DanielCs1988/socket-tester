@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {Message, SocketClient} from '../services/SocketClient';
 
 @Component({
   selector: 'app-server-response',
@@ -7,9 +8,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ServerResponseComponent implements OnInit {
 
-  constructor() { }
+  route: string;
+  payload: string;
+
+  constructor(private socket: SocketClient) { }
 
   ngOnInit() {
+    this.socket.onMessage.subscribe((message: Message) => {
+      this.route = message.route;
+      this.payload = JSON.stringify(message.payload, null, 4);
+    });
   }
 
 }
